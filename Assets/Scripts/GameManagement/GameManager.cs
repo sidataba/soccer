@@ -109,6 +109,15 @@ public class GameManager : MonoBehaviour
         // Play goal sound
         SoundManager.Instance?.PlayGoal();
 
+        // Trigger vibration for all controllers
+        if (ConsoleInputManager.Instance != null)
+        {
+            for (int i = 0; i < ConsoleInputManager.Instance.GetConnectedGamepadCount(); i++)
+            {
+                ConsoleInputManager.Instance.VibrationGoal(i);
+            }
+        }
+
         // Reset after goal
         StartCoroutine(ResetAfterGoal());
     }

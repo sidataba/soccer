@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Ball currentBall;
     private PlayerAnimator playerAnimator;
+    private PlayerSkills playerSkills;
 
     // Input
     private Vector2 moveInput;
@@ -43,6 +44,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         playerAnimator = GetComponent<PlayerAnimator>();
+        playerSkills = GetComponent<PlayerSkills>();
 
         if (kickPoint == null)
         {
@@ -73,8 +75,15 @@ public class PlayerController : MonoBehaviour
     {
         if (moveInput.magnitude > 0.1f)
         {
-            // Calculate movement
+            // Calculate movement with skill boost
             float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
+
+            // Apply speed boost from skills if active
+            if (playerSkills != null)
+            {
+                currentSpeed *= playerSkills.GetSpeedBoostMultiplier();
+            }
+
             Vector2 movement = moveInput.normalized * currentSpeed;
             rb.velocity = movement;
 
@@ -149,6 +158,9 @@ public class PlayerController : MonoBehaviour
 
             // Play kick sound
             SoundManager.Instance?.PlayKick();
+
+            // Trigger controller vibration
+            ConsoleInputManager.Instance?.VibrationKick(playerNumber - 1);
         }
     }
 
@@ -181,6 +193,9 @@ public class PlayerController : MonoBehaviour
 
             // Play pass sound
             SoundManager.Instance?.PlayPass();
+
+            // Trigger controller vibration
+            ConsoleInputManager.Instance?.VibrationKick(playerNumber - 1);
         }
     }
 

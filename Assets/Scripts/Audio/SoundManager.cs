@@ -19,6 +19,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private float passFrequency = 300f;
     [SerializeField] private float goalFrequency = 440f;
     [SerializeField] private float whistleFrequency = 2000f;
+    [SerializeField] private float skillSoundFrequency = 600f;
 
     private AudioSource audioSource;
 
@@ -80,6 +81,34 @@ public class SoundManager : MonoBehaviour
     public void PlayBounce()
     {
         PlaySound(400f, 0.05f, SoundType.Bounce);
+    }
+
+    /// <summary>
+    /// Play skill activation sound
+    /// </summary>
+    public void PlaySkillSound(SkillType skill)
+    {
+        switch (skill)
+        {
+            case SkillType.SpeedBoost:
+                PlaySound(800f, 0.3f, SoundType.SkillActivation);
+                break;
+            case SkillType.PowerShot:
+                PlaySound(150f, 0.4f, SoundType.PowerShot);
+                break;
+            case SkillType.CurveShot:
+                PlaySound(500f, 0.25f, SoundType.SkillActivation);
+                break;
+            case SkillType.SkillMove:
+                PlaySound(1000f, 0.15f, SoundType.SkillActivation);
+                break;
+            case SkillType.SlideTackle:
+                PlaySound(250f, 0.3f, SoundType.SlideTackle);
+                break;
+            case SkillType.ShieldBall:
+                PlaySound(350f, 0.2f, SoundType.SkillActivation);
+                break;
+        }
     }
 
     private void PlaySound(float frequency, float duration, SoundType type)
@@ -144,6 +173,18 @@ public class SoundManager : MonoBehaviour
                 // Short click
                 return Mathf.Sin(phase) * 0.5f + Random.Range(-0.2f, 0.2f);
 
+            case SoundType.SkillActivation:
+                // Rising electronic sound
+                return Mathf.Sin(phase * (1f + time)) * 0.7f;
+
+            case SoundType.PowerShot:
+                // Deep explosive sound
+                return Mathf.Sin(phase * 0.5f) * 0.9f + Random.Range(-0.4f, 0.4f);
+
+            case SoundType.SlideTackle:
+                // Scraping sound
+                return (Random.Range(-0.5f, 0.5f) * 0.7f) + (Mathf.Sin(phase) * 0.3f);
+
             default:
                 return Mathf.Sin(phase);
         }
@@ -171,6 +212,18 @@ public class SoundManager : MonoBehaviour
             case SoundType.Bounce:
                 // Very fast decay
                 return Mathf.Exp(-t * 15f);
+
+            case SoundType.SkillActivation:
+                // Rise and fall
+                return Mathf.Sin(t * Mathf.PI) * 0.8f;
+
+            case SoundType.PowerShot:
+                // Explosive with decay
+                return Mathf.Exp(-t * 5f);
+
+            case SoundType.SlideTackle:
+                // Linear decay
+                return 1f - t;
 
             default:
                 return 1f - t;
@@ -202,5 +255,8 @@ public enum SoundType
     Pass,
     Goal,
     Whistle,
-    Bounce
+    Bounce,
+    SkillActivation,
+    PowerShot,
+    SlideTackle
 }

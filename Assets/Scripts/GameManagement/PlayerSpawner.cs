@@ -117,6 +117,12 @@ public class PlayerSpawner : MonoBehaviour
         {
             player.AddComponent<PlayerAnimator>();
         }
+
+        // Add skills component for human players
+        if (!isAI && player.GetComponent<PlayerSkills>() == null)
+        {
+            player.AddComponent<PlayerSkills>();
+        }
     }
 
     public void CreateSpawnPoints()
