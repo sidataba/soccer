@@ -4,7 +4,18 @@ A Unity-based 2.5D top-down soccer game with local multiplayer support and full 
 
 ## Features
 
-- **Local Multiplayer**: 2-4 players on the same computer
+- **Game Modes**:
+  - Single Player vs AI (play with bot teammates against AI opponents)
+  - Local Multiplayer (2-4 human players)
+  - AI vs AI (watch bots play)
+- **AI Opponents**: Smart AI with 3 difficulty levels (Easy, Medium, Hard)
+- **Sprite Animations**: Simple but effective player animations (idle, run, kick)
+- **Sound Effects**: Procedurally generated sounds (no external files needed!)
+  - Kick sounds
+  - Pass sounds
+  - Goal celebration
+  - Whistle (match start/end)
+  - Ball bounce sounds
 - **Multiple Input Support**: Keyboard (WASD/Arrows) and Xbox/PlayStation controllers
 - **Steam Integration**:
   - Achievements

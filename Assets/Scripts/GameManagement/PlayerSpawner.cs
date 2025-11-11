@@ -9,6 +9,10 @@ public class PlayerSpawner : MonoBehaviour
     [Header("Player Prefab")]
     [SerializeField] private GameObject playerPrefab;
 
+    [Header("Game Mode")]
+    [SerializeField] private GameMode gameMode = GameMode.MultiplayerLocal;
+    [SerializeField] private AIDifficulty aiDifficulty = AIDifficulty.Medium;
+
     [Header("Team Colors")]
     [SerializeField] private Color team1Color = Color.red;
     [SerializeField] private Color team2Color = Color.blue;
@@ -30,34 +34,53 @@ public class PlayerSpawner : MonoBehaviour
 
     private void SpawnPlayers()
     {
-        // For now, spawn 2 players per team (4 players total)
-        // This can be made configurable through a main menu
-
-        // Team 1 players
-        for (int i = 0; i < 2; i++)
+        switch (gameMode)
         {
-            Vector3 spawnPos = team1SpawnPoints != null && team1SpawnPoints.Length > i
-                ? team1SpawnPoints[i].position
-                : new Vector3(-5 + i * 2, i * 2 - 1, 0);
+            case GameMode.SinglePlayerVsAI:
+                // Player controls Team 1, AI controls Team 2
+                SpawnPlayer(GetSpawnPosition(TeamType.Team1, 0), TeamType.Team1, 1, team1Color, false);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team1, 1), TeamType.Team1, 2, team1Color, false);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team2, 0), TeamType.Team2, 1, team2Color, true);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team2, 1), TeamType.Team2, 2, team2Color, true);
+                break;
 
-            SpawnPlayer(spawnPos, TeamType.Team1, i + 1, team1Color);
-        }
+            case GameMode.MultiplayerLocal:
+                // 2 human players per team (4 total)
+                SpawnPlayer(GetSpawnPosition(TeamType.Team1, 0), TeamType.Team1, 1, team1Color, false);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team1, 1), TeamType.Team1, 2, team1Color, false);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team2, 0), TeamType.Team2, 1, team2Color, false);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team2, 1), TeamType.Team2, 2, team2Color, false);
+                break;
 
-        // Team 2 players
-        for (int i = 0; i < 2; i++)
-        {
-            Vector3 spawnPos = team2SpawnPoints != null && team2SpawnPoints.Length > i
-                ? team2SpawnPoints[i].position
-                : new Vector3(5 - i * 2, i * 2 - 1, 0);
-
-            SpawnPlayer(spawnPos, TeamType.Team2, i + 1, team2Color);
+            case GameMode.AIvsAI:
+                // Watch AI play against AI
+                SpawnPlayer(GetSpawnPosition(TeamType.Team1, 0), TeamType.Team1, 1, team1Color, true);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team1, 1), TeamType.Team1, 2, team1Color, true);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team2, 0), TeamType.Team2, 1, team2Color, true);
+                SpawnPlayer(GetSpawnPosition(TeamType.Team2, 1), TeamType.Team2, 2, team2Color, true);
+                break;
         }
     }
 
-    private void SpawnPlayer(Vector3 position, TeamType team, int playerNumber, Color color)
+    private Vector3 GetSpawnPosition(TeamType team, int index)
+    {
+        Transform[] spawnPoints = team == TeamType.Team1 ? team1SpawnPoints : team2SpawnPoints;
+
+        if (spawnPoints != null && spawnPoints.Length > index)
+        {
+            return spawnPoints[index].position;
+        }
+
+        // Default positions
+        float xBase = team == TeamType.Team1 ? -5 : 5;
+        float xOffset = team == TeamType.Team1 ? index * 2 : -index * 2;
+        return new Vector3(xBase + xOffset, index * 2 - 1, 0);
+    }
+
+    private void SpawnPlayer(Vector3 position, TeamType team, int playerNumber, Color color, bool isAI)
     {
         GameObject player = Instantiate(playerPrefab, position, Quaternion.identity);
-        player.name = $"{team}_Player{playerNumber}";
+        player.name = $"{team}_Player{playerNumber}" + (isAI ? "_AI" : "");
 
         PlayerController controller = player.GetComponent<PlayerController>();
         if (controller != null)
@@ -66,11 +89,33 @@ public class PlayerSpawner : MonoBehaviour
             controller.SetPlayerColor(color);
         }
 
-        // Setup Input System for multiplayer
-        PlayerInput playerInput = player.GetComponent<PlayerInput>();
-        if (playerInput != null)
+        if (isAI)
         {
-            playerInput.defaultControlScheme = playerNumber <= 2 ? $"Keyboard{playerNumber}" : "Gamepad";
+            // Add AI controller and disable human input
+            AIController aiController = player.AddComponent<AIController>();
+            aiController.SetDifficulty(aiDifficulty);
+
+            // Disable PlayerInput for AI
+            PlayerInput playerInput = player.GetComponent<PlayerInput>();
+            if (playerInput != null)
+            {
+                playerInput.enabled = false;
+            }
+        }
+        else
+        {
+            // Setup Input System for human players
+            PlayerInput playerInput = player.GetComponent<PlayerInput>();
+            if (playerInput != null)
+            {
+                playerInput.defaultControlScheme = playerNumber <= 2 ? $"Keyboard{playerNumber}" : "Gamepad";
+            }
+        }
+
+        // Add animator component
+        if (player.GetComponent<PlayerAnimator>() == null)
+        {
+            player.AddComponent<PlayerAnimator>();
         }
     }
 
@@ -98,4 +143,11 @@ public class PlayerSpawner : MonoBehaviour
             team2SpawnPoints[i] = sp2.transform;
         }
     }
+}
+
+public enum GameMode
+{
+    SinglePlayerVsAI,
+    MultiplayerLocal,
+    AIvsAI
 }

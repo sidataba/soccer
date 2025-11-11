@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Ball currentBall;
+    private PlayerAnimator playerAnimator;
 
     // Input
     private Vector2 moveInput;
@@ -41,6 +42,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        playerAnimator = GetComponent<PlayerAnimator>();
 
         if (kickPoint == null)
         {
@@ -138,6 +140,15 @@ public class PlayerController : MonoBehaviour
             currentBall.Kick(shootDirection, shootPower);
             lastKickTime = Time.time;
             hasBall = false;
+
+            // Play kick animation
+            if (playerAnimator != null)
+            {
+                playerAnimator.PlayKickAnimation();
+            }
+
+            // Play kick sound
+            SoundManager.Instance?.PlayKick();
         }
     }
 
@@ -161,6 +172,15 @@ public class PlayerController : MonoBehaviour
             currentBall.Kick(passDirection, passPower);
             lastKickTime = Time.time;
             hasBall = false;
+
+            // Play kick animation
+            if (playerAnimator != null)
+            {
+                playerAnimator.PlayKickAnimation();
+            }
+
+            // Play pass sound
+            SoundManager.Instance?.PlayPass();
         }
     }
 
@@ -189,6 +209,7 @@ public class PlayerController : MonoBehaviour
     public bool HasBall() => hasBall;
     public TeamType GetTeam() => team;
     public int GetPlayerNumber() => playerNumber;
+    public bool IsMoving() => rb != null && rb.velocity.magnitude > 0.1f;
 
     public void SetTeam(TeamType newTeam)
     {
@@ -201,6 +222,46 @@ public class PlayerController : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.color = color;
+        }
+
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetTeamColor(color);
+        }
+    }
+
+    // AI Control Methods
+    public void AIShoot(Vector2 direction)
+    {
+        if (currentBall != null && hasBall && Time.time > lastKickTime + kickCooldown)
+        {
+            currentBall.Kick(direction, shootPower);
+            lastKickTime = Time.time;
+            hasBall = false;
+
+            if (playerAnimator != null)
+            {
+                playerAnimator.PlayKickAnimation();
+            }
+
+            SoundManager.Instance?.PlayKick();
+        }
+    }
+
+    public void AIPass(Vector2 direction)
+    {
+        if (currentBall != null && hasBall && Time.time > lastKickTime + kickCooldown)
+        {
+            currentBall.Kick(direction, passPower);
+            lastKickTime = Time.time;
+            hasBall = false;
+
+            if (playerAnimator != null)
+            {
+                playerAnimator.PlayKickAnimation();
+            }
+
+            SoundManager.Instance?.PlayPass();
         }
     }
 }

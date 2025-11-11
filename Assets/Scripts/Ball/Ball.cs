@@ -87,6 +87,9 @@ public class Ball : MonoBehaviour
             Vector2 velocity = rb.velocity;
             velocity *= bounceMultiplier;
             rb.velocity = velocity;
+
+            // Play bounce sound
+            SoundManager.Instance?.PlayBounce();
         }
     }
 }

@@ -82,6 +82,9 @@ public class GameManager : MonoBehaviour
         MatchStateChanged?.Invoke(MatchState.Playing);
         ScoreChanged?.Invoke(team1Score, team2Score);
 
+        // Play whistle sound
+        SoundManager.Instance?.PlayWhistle();
+
         if (ball != null)
         {
             ball.ResetBall();
@@ -102,6 +105,9 @@ public class GameManager : MonoBehaviour
         }
 
         ScoreChanged?.Invoke(team1Score, team2Score);
+
+        // Play goal sound
+        SoundManager.Instance?.PlayGoal();
 
         // Reset after goal
         StartCoroutine(ResetAfterGoal());
@@ -155,6 +161,9 @@ public class GameManager : MonoBehaviour
     {
         matchActive = false;
         MatchStateChanged?.Invoke(MatchState.MatchEnded);
+
+        // Play end whistle
+        SoundManager.Instance?.PlayWhistle();
 
         // Determine winner
         if (team1Score > team2Score)
