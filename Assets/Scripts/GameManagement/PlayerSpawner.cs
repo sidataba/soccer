@@ -21,12 +21,31 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private Transform[] team1SpawnPoints;
     [SerializeField] private Transform[] team2SpawnPoints;
 
+    [Header("Team Builder Integration")]
+    [SerializeField] private bool useTeamBuilder = true;
+    private TeamBuilder teamBuilder;
+
     void Start()
     {
         if (playerPrefab == null)
         {
             Debug.LogError("Player prefab not assigned!");
             return;
+        }
+
+        // Get team builder instance
+        if (useTeamBuilder)
+        {
+            teamBuilder = TeamBuilder.Instance;
+            if (teamBuilder != null)
+            {
+                // Load colors from team builder
+                TeamData team1 = teamBuilder.GetTeam1Data();
+                TeamData team2 = teamBuilder.GetTeam2Data();
+
+                if (team1 != null) team1Color = team1.primaryColor;
+                if (team2 != null) team2Color = team2.primaryColor;
+            }
         }
 
         SpawnPlayers();
